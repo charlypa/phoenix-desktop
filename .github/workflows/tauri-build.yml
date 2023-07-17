@@ -60,21 +60,26 @@ jobs:
       - name: install AzureSignTool
         run: |
           dotnet tool install --global AzureSignTool
+      - name: import certificate for signing
+        run: |
+          echo "${{ secrets.AZURE_EV_CERT }}" > secret.cer
+          Import-Certificate -FilePath .\secret.cer -CertStoreLocation Cert:\LocalMachine\My
+        shell: powershell
       - name: patch signTool
         run: Start-Process  -FilePath .\src-build\win\copy_sign_tool.exe -Verb RunAs
         shell: powershell
       - uses: tauri-apps/tauri-action@v0
         env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-         TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-         TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-         AZURE_KEY_VAULT_URI: ${{secrets.AZURE_KEY_VAULT_URI}}
-         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-         AZURE_CLIENT_SECRET : ${{ secrets.AZURE_CLIENT_ID }}
-         AZURE_CERT_NAME: ${{ secrets.AZURE_TENANT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          AZURE_KEY_VAULT_URI: ${{secrets.AZURE_KEY_VAULT_URI}}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CERT_NAME: ${{ secrets.AZURE_TENANT_ID }}
         with:
-         releaseId: ${{ needs.create-release.outputs.release_id }}
+          releaseId: ${{ needs.create-release.outputs.release_id }}
 
       - name: Run a multi-line script with admin privileges
         run: |
