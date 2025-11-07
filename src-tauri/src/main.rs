@@ -565,12 +565,11 @@ fn main() {
             let path = remove_version_from_url(request.uri());
             let path = path.strip_prefix("phtauri://localhost");
             if path.is_none() {
-                let not_found_response = ResponseBuilder::new()
+                return ResponseBuilder::new()
                     .status(404)
                     .mimetype("text/html")
                     .body("Asset not found".as_bytes().to_vec())
                     .unwrap();
-                return Ok(not_found_response);
             }
             let path = path.unwrap();
             let path = percent_encoding::percent_decode(path.as_bytes())
@@ -582,12 +581,11 @@ fn main() {
 
             let asset_option = app.asset_resolver().get(final_path.clone());
             if asset_option.is_none() {
-                let not_found_response = ResponseBuilder::new()
+                return ResponseBuilder::new()
                     .status(404)
                     .mimetype("text/html")
                     .body("Asset not found".as_bytes().to_vec())
                     .unwrap();
-                return Ok(not_found_response);
             }
 
             let asset = asset_option.unwrap();
@@ -603,16 +601,19 @@ fn main() {
                 .header("Cache-Control", "private, max-age=7776000, immutable") // 3 month cache age expiry
                 .mimetype(&asset.mime_type);
 
-            let response = builder.body(asset.bytes)?;
-            Ok(response)
+            builder.body(asset.bytes).unwrap()
         })
-        .plugin(tauri_plugin_fs_extra::init())
-        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(StateFlags::all() & !StateFlags::VISIBLE).build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
                     println!("{}, {argv:?}, {cwd}", app.package_info().name);
 
+                    // Try to focus the main window when another instance is launched
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.set_focus();
+                    }
+
                     app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
                 }))
+        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(StateFlags::all() & !StateFlags::VISIBLE).build())
         .on_window_event(|event| {
             // Get the trust state from the app handle
             let app_handle = event.window().app_handle();

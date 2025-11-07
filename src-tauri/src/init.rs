@@ -5,11 +5,13 @@ use crate::boot_config::AppConstants;
 
 pub fn init_app(app: &mut tauri::App) {
     let config = app.config().clone();
-    println!("Appdata path is {}",  tauri::api::path::app_local_data_dir(&config).expect("failed to retrieve app_local_data_dir").display());
-    ensure_dir_exists(&tauri::api::path::app_local_data_dir(&config).unwrap()); // canonicalize will work only if path exists
+    let app_handle = app.handle();
+
+    println!("Appdata path is {}", app_handle.path().app_local_data_dir().expect("failed to retrieve app_local_data_dir").display());
+    ensure_dir_exists(&app_handle.path().app_local_data_dir().unwrap()); // canonicalize will work only if path exists
     let _ = APP_CONSTANTS.set(AppConstants {
         tauri_config: config.clone(),
-        app_local_data_dir: tauri::api::path::app_local_data_dir(&config).expect("failed to retrieve app_local_data_dir")
+        app_local_data_dir: app_handle.path().app_local_data_dir().expect("failed to retrieve app_local_data_dir")
             .canonicalize().expect("Failed to canonicalize app_local_data_dir")
     });
 
