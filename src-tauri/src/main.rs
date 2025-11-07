@@ -5,7 +5,7 @@ windows_subsystem = "windows"
 use std::env;
 use std::panic;
 
-use tauri::{Manager};
+use tauri::{Manager, Emitter};
 use std::path::PathBuf;
 
 use tauri::{State};
@@ -18,8 +18,6 @@ use std::fs::metadata;
 use gtk::{glib::ObjectExt, prelude::WidgetExt};
 
 use std::process::Command;
-#[cfg(target_os = "linux")]
-extern crate webkit2gtk;
 
 #[cfg(target_os = "macos")]
 #[macro_use]
@@ -35,8 +33,8 @@ use native_dialog::{MessageDialog, MessageType};
 
 use regex::Regex;
 extern crate percent_encoding;
-use tauri::http::ResponseBuilder;
-use tauri::GlobalWindowEvent;
+use http::Response as HttpResponse;
+use http::response::Builder as ResponseBuilder;
 mod init;
 mod bugsnag;
 mod utilities;
@@ -105,7 +103,7 @@ fn move_to_trash(delete_path: &str) -> Result<(), String> {
 
 #[tauri::command]
 fn _get_window_labels(app: tauri::AppHandle) -> Vec<String> {
-    app.windows()
+    app.webview_windows()
         .iter()
         .map(|(label, _window)| label.to_string())
         .collect()
@@ -255,14 +253,18 @@ static mut DEVTOOLS_LOADED:bool = false;
 
 #[tauri::command]
 fn toggle_devtools(window: tauri::Window) {
-    unsafe {
-        // though unsafe, this is fine as its just a view toggle and not mission critical.
-        if !DEVTOOLS_LOADED {
-            window.open_devtools();
-        } else {
-            window.close_devtools();
+    // TODO: Tauri 2.0 - devtools API has changed, need to implement using new webview API
+    // For now, devtools can be opened via config: app.devtools = true
+    // Or via webview.open_devtools() on the webview instance
+    if let Some(webview) = window.webviews().first() {
+        unsafe {
+            if !DEVTOOLS_LOADED {
+                let _ = webview.open_devtools();
+            } else {
+                let _ = webview.close_devtools();
+            }
+            DEVTOOLS_LOADED = !DEVTOOLS_LOADED;
         }
-        DEVTOOLS_LOADED = !DEVTOOLS_LOADED;
     }
 }
 
@@ -317,32 +319,35 @@ fn show_in_folder(path: String) {
 
 #[tauri::command]
 fn zoom_window(window: tauri::Window, scale_factor: f64) {
-    let _ = window.with_webview(move |webview| {
-        #[cfg(target_os = "linux")]
-        {
-          // see https://docs.rs/webkit2gtk/0.18.2/webkit2gtk/struct.WebView.html
-          // and https://docs.rs/webkit2gtk/0.18.2/webkit2gtk/trait.WebViewExt.html
-          use webkit2gtk::traits::WebViewExt;
-          webview.inner().set_zoom_level(scale_factor);
-        }
+    if let Some(webview) = window.webviews().first() {
+        let _ = webview.with_webview(move |webview| {
+            #[cfg(target_os = "linux")]
+            {
+              // see https://docs.rs/webkit2gtk/0.18.2/webkit2gtk/struct.WebView.html
+              // and https://docs.rs/webkit2gtk/0.18.2/webkit2gtk/trait.WebViewExt.html
+              // TODO: Tauri 2.0 - webkit zoom API has changed, needs investigation
+              // For now, zoom functionality is disabled on Linux
+              // webview.set_zoom_level(scale_factor);
+            }
 
-        #[cfg(windows)]
-        unsafe {
-          // see https://docs.rs/webview2-com/0.19.1/webview2_com/Microsoft/Web/WebView2/Win32/struct.ICoreWebView2Controller.html
-          webview.controller().SetZoomFactor(scale_factor).unwrap();
-        }
+            #[cfg(windows)]
+            unsafe {
+              // see https://docs.rs/webview2-com/0.19.1/webview2_com/Microsoft/Web/WebView2/Win32/struct.ICoreWebView2Controller.html
+              webview.controller().SetZoomFactor(scale_factor).unwrap();
+            }
 
-        #[cfg(target_os = "macos")]
-        unsafe {
-          let () = msg_send![webview.inner(), setPageZoom: scale_factor];
-        }
-      });
+            #[cfg(target_os = "macos")]
+            unsafe {
+              let () = msg_send![webview.inner(), setPageZoom: scale_factor];
+            }
+          });
+    }
 }
 
-fn process_window_event(event: &GlobalWindowEvent, trust_state: &State<WindowAesTrust>) {
-    if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
+fn process_window_event(window: &tauri::Window, event: &tauri::WindowEvent, trust_state: &State<WindowAesTrust>) {
+    if let tauri::WindowEvent::CloseRequested { .. } = event {
         // Remove AES trust for the closing window
-        let window_label = event.window().label().to_string();
+        let window_label = window.label().to_string();
         let mut trust_map = trust_state.trust_map.lock().unwrap();
 
         if trust_map.remove(&window_label).is_some() {
@@ -562,15 +567,14 @@ fn main() {
             trust_map: Mutex::new(HashMap::new()),
         })
         .register_uri_scheme_protocol("phtauri", move |app, request| { // can't use `tauri` because that's already in use
-            let path = remove_version_from_url(request.uri());
+            let path = remove_version_from_url(&request.uri().to_string());
             let path = path.strip_prefix("phtauri://localhost");
             if path.is_none() {
-                let not_found_response = ResponseBuilder::new()
+                return ResponseBuilder::new()
                     .status(404)
-                    .mimetype("text/html")
+                    .header("Content-Type", "text/html")
                     .body("Asset not found".as_bytes().to_vec())
                     .unwrap();
-                return Ok(not_found_response);
             }
             let path = path.unwrap();
             let path = percent_encoding::percent_decode(path.as_bytes())
@@ -580,14 +584,13 @@ fn main() {
             let path_without_query_or_fragment = path.split('?').next().unwrap_or(&path);
             let final_path = path_without_query_or_fragment.split('#').next().unwrap_or(path_without_query_or_fragment).to_string();
 
-            let asset_option = app.asset_resolver().get(final_path.clone());
+            let asset_option = app.app_handle().asset_resolver().get(final_path.clone());
             if asset_option.is_none() {
-                let not_found_response = ResponseBuilder::new()
+                return ResponseBuilder::new()
                     .status(404)
-                    .mimetype("text/html")
+                    .header("Content-Type", "text/html")
                     .body("Asset not found".as_bytes().to_vec())
                     .unwrap();
-                return Ok(not_found_response);
             }
 
             let asset = asset_option.unwrap();
@@ -601,23 +604,26 @@ fn main() {
                 .header("Access-Control-Allow-Origin", window_origin)
                 .header("Origin", window_origin)
                 .header("Cache-Control", "private, max-age=7776000, immutable") // 3 month cache age expiry
-                .mimetype(&asset.mime_type);
+                .header("Content-Type", &asset.mime_type);
 
-            let response = builder.body(asset.bytes)?;
-            Ok(response)
+            builder.body(asset.bytes).unwrap()
         })
-        .plugin(tauri_plugin_fs_extra::init())
-        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(StateFlags::all() & !StateFlags::VISIBLE).build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
                     println!("{}, {argv:?}, {cwd}", app.package_info().name);
 
-                    app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+                    // Try to focus the main window when another instance is launched
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.set_focus();
+                    }
+
+                    let _ = app.emit("single-instance", Payload { args: argv, cwd });
                 }))
-        .on_window_event(|event| {
+        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(StateFlags::all() & !StateFlags::VISIBLE).build())
+        .on_window_event(|window, event| {
             // Get the trust state from the app handle
-            let app_handle = event.window().app_handle();
+            let app_handle = window.app_handle();
             let trust_state = app_handle.state::<WindowAesTrust>();
-            process_window_event(&event, &trust_state);
+            process_window_event(window, event, &trust_state);
         })
         .invoke_handler(tauri::generate_handler![
             get_mac_deep_link_requests, get_process_id,
@@ -635,7 +641,7 @@ fn main() {
                 // In linux, f10 key press events are reserved for gtk-menu-bar-accel and not passed.
                 // So we assing f25 key to it to free f10 and make it available to app
                 // https://discord.com/channels/616186924390023171/1192844593557950474
-                let win = app.get_window("main").unwrap();
+                let win = app.get_webview_window("main").unwrap();
                 let gtk_win = win.gtk_window().unwrap();
                 let gtk_settings = gtk_win.settings().unwrap();
                 gtk_settings.set_property("gtk-menu-bar-accel", "F25");

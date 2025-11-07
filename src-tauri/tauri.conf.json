@@ -1,158 +1,170 @@
 {
     "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+    "productName": "Phoenix Code Experimental Build",
+    "version": "4.1.1",
+    "identifier": "io.phcode.dev",
     "build": {
         "beforeBuildCommand": "",
         "beforeDevCommand": "npm run _watch_src-node",
-        "devPath": "http://localhost:8000/src/",
-        "distDir": "../src/",
-        "withGlobalTauri": true
+        "devUrl": "http://localhost:8000/src/",
+        "frontendDist": "../src/"
     },
-    "package": {
-        "productName": "Phoenix Code Experimental Build",
-        "version": "4.1.1"
-    },
-    "tauri": {
-        "allowlist": {
-            "all": true,
-            "fs": {
-                "all": true,
-                "scope": {
-                    "allow": [
-                        "$APPCONFIG/**",
-                        "$APPDATA/**",
-                        "$APPLOCALDATA/**",
-                        "$APPCACHE/**",
-                        "$APPLOG/**",
-                        "$AUDIO/**",
-                        "$CACHE/**",
-                        "$CONFIG/**",
-                        "$DATA/**",
-                        "$LOCALDATA/**",
-                        "$DESKTOP/**",
-                        "$DOCUMENT/**",
-                        "$DOWNLOAD/**",
-                        "$EXE/**",
-                        "$FONT/**",
-                        "$HOME/**",
-                        "$PICTURE/**",
-                        "$PUBLIC/**",
-                        "$RUNTIME/**",
-                        "$TEMPLATE/**",
-                        "$VIDEO/**",
-                        "$RESOURCE/**",
-                        "$APP/**",
-                        "$LOG/**",
-                        "$TEMP/**",
-                        "**",
-                        "**/**"
-                    ],
-                    "requireLiteralLeadingDot": false
-                }
-            },
-            "protocol": {
-                "asset": true,
-                "assetScope": {
-                    "allow": [
-                        "$APPLOCALDATA/assets/**",
-                        "$APPLOCALDATA/assets/**/*.*"
-                    ],
-                    "requireLiteralLeadingDot": false
-                }
-            },
-            "shell": {
-                "all": true,
-                "execute": true,
-                "sidecar": true,
-                "open": true,
-                "scope": [
-                    {
-                        "name": "phnode",
-                        "sidecar": true,
-                        "args": [
-                            {
-                                "validator": "\\S*"
-                            },
-                            {
-                                "validator": "\\S*"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "run-update-linux-command",
-                        "cmd": "x-terminal-emulator",
-                        "args": [
-                            "-e",
-                            "wget -qO- https://updates.phcode.io/linux/installer.sh | bash -s -- --upgrade"
-                        ]
-                    },
-                    {
-                        "name": "run-update-linux-command-dev",
-                        "cmd": "x-terminal-emulator",
-                        "args": [
-                            "-e",
-                            "wget -qO- https://updates.phcode.io/linux/installer-latest-experimental-build.sh | bash -s -- --upgrade"
-                        ]
-                    },
-                    {
-                        "name": "recursive-copy-unix",
-                        "cmd": "cp",
-                        "args": [
-                            "-r",
-                            {
-                                "validator": "\\S*"
-                            },
-                            {
-                                "validator": "\\S*"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "mac-remove-quarantine",
-                        "cmd": "xattr",
-                        "args": [
-                            "-rd",
-                            "com.apple.quarantine",
-                            {
-                                "validator": "\\S*"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "tar-unix",
-                        "cmd": "tar",
-                        "args": [
-                            {
-                                "validator": "\\S*"
-                            },
-                            {
-                                "validator": "\\S*"
-                            },
-                            {
-                                "validator": "\\S*"
-                            },
-                            {
-                                "validator": "\\S*"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "recursive-rm-unix",
-                        "cmd": "rm",
-                        "args": [
-                            "-rf",
-                            {
-                                "validator": "\\S*"
-                            }
-                        ]
-                    }
-                ]
+    "bundle": {
+        "active": true,
+        "category": "DeveloperTool",
+        "copyright": "Copyright (c) 2022 - present Core.ai",
+        "createUpdaterArtifacts": "v1Compatible",
+        "publisher": "Core.ai",
+        "homepage": "https://phcode.io",
+        "linux": {
+            "appimage": {
+                "bundleMediaFramework": true
             }
         },
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "shortDescription": "Phoenix Code Experimental Build",
+        "longDescription": "Phoenix Code Experimental Build",
+        "macOS": {
+            "entitlements": "../entitlements.plist",
+            "exceptionDomain": "localhost",
+            "frameworks": [],
+            "providerShortName": null,
+            "signingIdentity": null
+        },
+        "resources": [
+            "src-node/*"
+        ],
+        "targets": [
+            "appimage",
+            "nsis",
+            "app",
+            "dmg"
+        ],
+        "windows": {
+            "certificateThumbprint": "09c46b557f16fcdd49b2706c9858e82018cba219",
+            "digestAlgorithm": "sha256",
+            "timestampUrl": "http://timestamp.globalsign.com/tsa/advanced",
+            "nsis": {
+                "displayLanguageSelector": true,
+                "template": "./src/bundle/windows/nsis/installer.nsi",
+                "languages": [
+                    "English",
+                    "Afrikaans",
+                    "Albanian",
+                    "Arabic",
+                    "Armenian",
+                    "Asturian",
+                    "Basque",
+                    "Belarusian",
+                    "Bosnian",
+                    "Breton",
+                    "Bulgarian",
+                    "Catalan",
+                    "Corsican",
+                    "Croatian",
+                    "Czech",
+                    "Danish",
+                    "Dutch",
+                    "Esperanto",
+                    "Estonian",
+                    "Farsi",
+                    "Finnish",
+                    "French",
+                    "Galician",
+                    "Georgian",
+                    "German",
+                    "Greek",
+                    "Hebrew",
+                    "Hindi",
+                    "Hungarian",
+                    "Icelandic",
+                    "Indonesian",
+                    "Irish",
+                    "Italian",
+                    "Japanese",
+                    "Korean",
+                    "Kurdish",
+                    "Latvian",
+                    "Lithuanian",
+                    "Luxembourgish",
+                    "Macedonian",
+                    "Malay",
+                    "Mongolian",
+                    "Norwegian",
+                    "NorwegianNynorsk",
+                    "Pashto",
+                    "Polish",
+                    "Portuguese",
+                    "PortugueseBR",
+                    "Romanian",
+                    "Russian",
+                    "ScotsGaelic",
+                    "Serbian",
+                    "SerbianLatin",
+                    "SimpChinese",
+                    "Slovak",
+                    "Slovenian",
+                    "Spanish",
+                    "SpanishInternational",
+                    "Swedish",
+                    "Tatar",
+                    "Thai",
+                    "TradChinese",
+                    "Turkish",
+                    "Ukrainian",
+                    "Uzbek",
+                    "Vietnamese",
+                    "Welsh"
+                ]
+            }
+        }
+    },
+    "app": {
+        "security": {
+            "csp": null,
+            "dangerousDisableAssetCspModification": true,
+            "capabilities": []
+        },
+        "withGlobalTauri": true,
+        "windows": [
+            {
+                "label": "main",
+                "fullscreen": false,
+                "height": 900,
+                "minHeight": 600,
+                "resizable": true,
+                "title": "Phoenix Code Experimental Build",
+                "width": 1366,
+                "minWidth": 800,
+                "dragDropEnabled": false
+            },
+            {
+                "label": "healthData",
+                "title": "Health data window",
+                "url": "http://localhost:8000/src/desktop-metrics.html",
+                "visible": false,
+                "dragDropEnabled": false
+            },
+            {
+                "label": "fileDrop",
+                "title": "Drop To Open Files",
+                "url": "http://localhost:8000/src/drop-files.html",
+                "visible": false,
+                "dragDropEnabled": true,
+                "decorations": false
+            }
+        ]
+    },
+    "plugins": {
         "cli": {
             "description": "Phoenix Code cli",
             "longDescription": "CLI to open project, run tests amd other things",
-            "beforeHelp": "",
-            "afterHelp": "",
             "args": [
                 {
                     "name": "quit-when-done",
@@ -166,284 +178,6 @@
                 }
             ]
         },
-        "bundle": {
-            "active": true,
-            "category": "DeveloperTool",
-            "copyright": "Copyright (c) 2022 - present Core.ai",
-            "appimage": {
-                "bundleMediaFramework": true
-            },
-            "externalBin": [
-                "phnode"
-            ],
-            "icon": [
-                "icons/32x32.png",
-                "icons/128x128.png",
-                "icons/128x128@2x.png",
-                "icons/icon.icns",
-                "icons/icon.ico"
-            ],
-            "identifier": "io.phcode.dev",
-            "shortDescription": "Phoenix Code Experimental Build",
-            "longDescription": "Phoenix Code Experimental Build",
-            "macOS": {
-                "entitlements": "../entitlements.plist",
-                "exceptionDomain": "localhost",
-                "frameworks": [],
-                "providerShortName": null,
-                "signingIdentity": null,
-                "license": "./license/agpl"
-            },
-            "resources": [
-                "src-node/*"
-            ],
-            "targets": [
-                "appimage",
-                "nsis",
-                "app",
-                "dmg",
-                "updater"
-            ],
-            "windows": {
-                "certificateThumbprint": "09c46b557f16fcdd49b2706c9858e82018cba219",
-                "digestAlgorithm": "sha256",
-                "timestampUrl": "http://timestamp.globalsign.com/tsa/advanced",
-                "nsis": {
-                    "displayLanguageSelector": true,
-                    "license": "./license/agpl",
-                    "template": "./src/bundle/windows/nsis/installer.nsi",
-                    "languages": [
-                        "English",
-                        "Afrikaans",
-                        "Albanian",
-                        "Arabic",
-                        "Armenian",
-                        "Asturian",
-                        "Basque",
-                        "Belarusian",
-                        "Bosnian",
-                        "Breton",
-                        "Bulgarian",
-                        "Catalan",
-                        "Corsican",
-                        "Croatian",
-                        "Czech",
-                        "Danish",
-                        "Dutch",
-                        "Esperanto",
-                        "Estonian",
-                        "Farsi",
-                        "Finnish",
-                        "French",
-                        "Galician",
-                        "Georgian",
-                        "German",
-                        "Greek",
-                        "Hebrew",
-                        "Hindi",
-                        "Hungarian",
-                        "Icelandic",
-                        "Indonesian",
-                        "Irish",
-                        "Italian",
-                        "Japanese",
-                        "Korean",
-                        "Kurdish",
-                        "Latvian",
-                        "Lithuanian",
-                        "Luxembourgish",
-                        "Macedonian",
-                        "Malay",
-                        "Mongolian",
-                        "Norwegian",
-                        "NorwegianNynorsk",
-                        "Pashto",
-                        "Polish",
-                        "Portuguese",
-                        "PortugueseBR",
-                        "Romanian",
-                        "Russian",
-                        "ScotsGaelic",
-                        "Serbian",
-                        "SerbianLatin",
-                        "SimpChinese",
-                        "Slovak",
-                        "Slovenian",
-                        "Spanish",
-                        "SpanishInternational",
-                        "Swedish",
-                        "Tatar",
-                        "Thai",
-                        "TradChinese",
-                        "Turkish",
-                        "Ukrainian",
-                        "Uzbek",
-                        "Vietnamese",
-                        "Welsh"
-                    ]
-                }
-            }
-        },
-        "security": {
-            "csp": null,
-            "dangerousDisableAssetCspModification": true,
-            "dangerousRemoteDomainIpcAccess": [
-                {
-                    "scheme": "phtauri",
-                    "domain": "localhost",
-                    "enableTauriAPI": true,
-                    "plugins": [
-                        "fs-extra"
-                    ],
-                    "windows": [
-                        "main",
-                        "updater",
-                        "fileDrop",
-                        "phcode-1",
-                        "phcode-2",
-                        "phcode-3",
-                        "phcode-4",
-                        "phcode-5",
-                        "phcode-6",
-                        "phcode-7",
-                        "phcode-8",
-                        "phcode-9",
-                        "phcode-10",
-                        "phcode-11",
-                        "phcode-12",
-                        "phcode-13",
-                        "phcode-14",
-                        "phcode-15",
-                        "phcode-16",
-                        "phcode-17",
-                        "phcode-18",
-                        "phcode-19",
-                        "phcode-20",
-                        "phcode-21",
-                        "phcode-22",
-                        "phcode-23",
-                        "phcode-24",
-                        "phcode-25",
-                        "phcode-26",
-                        "phcode-27",
-                        "phcode-28",
-                        "phcode-29",
-                        "phcode-30",
-                        "extn-1",
-                        "extn-2",
-                        "extn-3",
-                        "extn-4",
-                        "extn-5",
-                        "extn-6",
-                        "extn-7",
-                        "extn-8",
-                        "extn-9",
-                        "extn-10",
-                        "extn-11",
-                        "extn-12",
-                        "extn-13",
-                        "extn-14",
-                        "extn-15",
-                        "extn-16",
-                        "extn-17",
-                        "extn-18",
-                        "extn-19",
-                        "extn-20",
-                        "extn-21",
-                        "extn-22",
-                        "extn-23",
-                        "extn-24",
-                        "extn-25",
-                        "extn-26",
-                        "extn-27",
-                        "extn-28",
-                        "extn-29",
-                        "extn-30"
-                    ]
-                },
-                {
-                    "scheme": "https",
-                    "domain": "phtauri.localhost",
-                    "enableTauriAPI": true,
-                    "plugins": [
-                        "fs-extra"
-                    ],
-                    "windows": [
-                        "main",
-                        "updater",
-                        "fileDrop",
-                        "phcode-1",
-                        "phcode-2",
-                        "phcode-3",
-                        "phcode-4",
-                        "phcode-5",
-                        "phcode-6",
-                        "phcode-7",
-                        "phcode-8",
-                        "phcode-9",
-                        "phcode-10",
-                        "phcode-11",
-                        "phcode-12",
-                        "phcode-13",
-                        "phcode-14",
-                        "phcode-15",
-                        "phcode-16",
-                        "phcode-17",
-                        "phcode-18",
-                        "phcode-19",
-                        "phcode-20",
-                        "phcode-21",
-                        "phcode-22",
-                        "phcode-23",
-                        "phcode-24",
-                        "phcode-25",
-                        "phcode-26",
-                        "phcode-27",
-                        "phcode-28",
-                        "phcode-29",
-                        "phcode-30",
-                        "extn-1",
-                        "extn-2",
-                        "extn-3",
-                        "extn-4",
-                        "extn-5",
-                        "extn-6",
-                        "extn-7",
-                        "extn-8",
-                        "extn-9",
-                        "extn-10",
-                        "extn-11",
-                        "extn-12",
-                        "extn-13",
-                        "extn-14",
-                        "extn-15",
-                        "extn-16",
-                        "extn-17",
-                        "extn-18",
-                        "extn-19",
-                        "extn-20",
-                        "extn-21",
-                        "extn-22",
-                        "extn-23",
-                        "extn-24",
-                        "extn-25",
-                        "extn-26",
-                        "extn-27",
-                        "extn-28",
-                        "extn-29",
-                        "extn-30"
-                    ]
-                },
-                {
-                    "scheme": "http",
-                    "domain": "localhost:8000",
-                    "enableTauriAPI": true,
-                    "windows": [
-                        "healthData"
-                    ]
-                }
-            ]
-        },
         "updater": {
             "active": true,
             "windows": {
@@ -454,34 +188,6 @@
             ],
             "dialog": false,
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2QTY2RjMxQUIzQkU0RDQKUldUVTVEdXJNVyttWmc2ODNSODlVcmZhS0dFRW1mYnBkaytvTDcrSDJXSlhYOHVrUWRyaXhHRjcK"
-        },
-        "windows": [
-            {
-                "fullscreen": false,
-                "height": 900,
-                "minHeight": 600,
-                "resizable": true,
-                "title": "Phoenix Code Experimental Build",
-                "width": 1366,
-                "minWidth": 800,
-                "acceptFirstMouse": true,
-                "fileDropEnabled": false
-            },
-            {
-                "label": "healthData",
-                "title": "Health data window",
-                "url": "http://localhost:8000/src/desktop-metrics.html",
-                "visible": false,
-                "fileDropEnabled": false
-            },
-            {
-                "label": "fileDrop",
-                "title": "Drop To Open Files",
-                "url": "http://localhost:8000/src/drop-files.html",
-                "visible": false,
-                "fileDropEnabled": true,
-                "decorations": false
-            }
-        ]
+        }
     }
 }

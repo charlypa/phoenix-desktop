@@ -11,7 +11,7 @@ rust-version = "1.70"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json"] }
@@ -27,15 +27,14 @@ trash = "5"
 webbrowser = "1.0"
 backtrace = "0.3.73"
 serde = { version = "1.0.200", features = ["derive"] }
-tauri = { version = "1.6.2", features = [ "updater", "cli", "api-all", "devtools", "linux-protocol-headers"] }
+tauri = { version = "2", features = ["devtools"] }
 winapi = { version = "0.3.9", features = ["fileapi"] }
-tauri-plugin-fs-extra = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
 keyring = "2.3.3"
 whoami = "1.5.2"
-# AES encryption dependencies
+http = "1.0"
 # AES encryption dependencies
 aes-gcm = "0.10"
 hex = "0.4.3"
@@ -44,13 +43,12 @@ hex = "0.4.3"
 native-dialog = "0.7.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-gtk = "0.15"
-webkit2gtk = "0.18" # if tauri build fails, make sure to match this version to what we have in tauri
+gtk = "0.18"
 dialog = "0.3.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
-tauri-plugin-deep-link = "0.1.2"
+tauri-plugin-deep-link = "2.0"
 lazy_static = "1.4"
 native-dialog = "0.7.0"
 
