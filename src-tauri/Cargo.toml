@@ -34,7 +34,7 @@ tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-wo
 fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
 keyring = "2.3.3"
 whoami = "1.5.2"
-# AES encryption dependencies
+http = "1.0"
 # AES encryption dependencies
 aes-gcm = "0.10"
 hex = "0.4.3"

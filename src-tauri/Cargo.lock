@@ -3474,6 +3474,7 @@ dependencies = [
  "fix-path-env",
  "gtk",
  "hex",
+ "http",
  "keyring",
  "lazy_static",
  "native-dialog",
