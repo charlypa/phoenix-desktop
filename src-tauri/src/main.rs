@@ -18,8 +18,6 @@ use std::fs::metadata;
 use gtk::{glib::ObjectExt, prelude::WidgetExt};
 
 use std::process::Command;
-#[cfg(target_os = "linux")]
-extern crate webkit2gtk;
 
 #[cfg(target_os = "macos")]
 #[macro_use]

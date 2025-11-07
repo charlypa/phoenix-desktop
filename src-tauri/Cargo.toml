@@ -44,7 +44,6 @@ native-dialog = "0.7.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = "0.18"
-webkit2gtk = "2.0" # Updated for Tauri 2.0
 dialog = "0.3.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]

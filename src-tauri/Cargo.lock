@@ -3494,7 +3494,6 @@ dependencies = [
  "tokio",
  "trash",
  "webbrowser",
- "webkit2gtk",
  "whoami",
  "winapi 0.3.9",
 ]
